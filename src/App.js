@@ -9,6 +9,7 @@ import Content from './pages/Content';
 import Discover from './pages/Discover';
 import Notifications from './pages/Notifications';
 import Settings from './pages/Settings';
+import PostContent from './pages/PostContent';
 
 function App() {
   const [mode, setMode] = useState('light');
@@ -57,6 +58,7 @@ function App() {
               <Route path="/discover" element={<Discover mode={mode} />} />
               <Route path="/notifications" element={<Notifications mode={mode} />} />
               <Route path="/settings" element={<Settings mode={mode} onThemeChange={handleThemeChange} />} />
+              <Route path="/post" element={<PostContent />} />
             </Routes>
           </MainContent>
         </AppBody>

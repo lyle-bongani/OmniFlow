@@ -1,16 +1,25 @@
 import React from 'react';
 import styled from 'styled-components';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import { IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 
-function MessageBubble({ message, timestamp, sender, isReceived, isDarkMode }) {
+function MessageBubble({ message, timestamp, sender, isReceived, isDarkMode, isTyping, onDelete, onReact }) {
     return (
         <Container className="message-animation" isReceived={isReceived}>
             <MessageContent isReceived={isReceived} isDarkMode={isDarkMode}>
                 <SenderName isDarkMode={isDarkMode}>{sender}</SenderName>
-                {message}
+                {isTyping ? <TypingIndicator isDarkMode={isDarkMode}>Typing...</TypingIndicator> : <MessageText>{message}</MessageText>}
                 <MessageInfo>
                     <TimeStamp isDarkMode={isDarkMode}>{timestamp}</TimeStamp>
                     {!isReceived && <StyledDoneAll />}
+                    <IconButton size="small" onClick={onDelete}>
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={onReact}>
+                        <ThumbUpIcon fontSize="small" />
+                    </IconButton>
                 </MessageInfo>
             </MessageContent>
         </Container>
@@ -79,4 +88,14 @@ const StyledDoneAll = styled(DoneAllIcon)`
   color: #34B7F1;
 `;
 
-export default MessageBubble; 
+const TypingIndicator = styled.div`
+  font-style: italic;
+  color: ${props => props.isDarkMode ? '#e9edef' : 'inherit'};
+`;
+
+const MessageText = styled.div`
+  white-space: pre-wrap;
+  word-wrap: break-word;
+`;
+
+export default MessageBubble;

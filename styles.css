@@ -1,0 +1,78 @@
+/* Base styles for mobile devices */
+body {
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.container {
+    width: 100%;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+/* Responsive grid layout */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.col {
+    flex: 1;
+    padding: 15px;
+}
+
+/* Media queries for tablets */
+@media (min-width: 600px) {
+    .container {
+        max-width: 600px;
+    }
+}
+
+/* Media queries for desktops */
+@media (min-width: 992px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+}
+
+/* Additional responsive styles */
+.header, .footer {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+}
+
+.navbar a {
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+}
+
+.navbar a:hover {
+    color: #007BFF;
+}
+
+/* Styles for emoji picker */
+.emoji-picker-react {
+    position: absolute;
+    bottom: 60px;
+    left: 10px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background-color: #fff;
+}

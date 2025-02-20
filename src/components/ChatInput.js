@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { IconButton } from '@mui/material';
 import InsertEmoticonIcon from '@mui/icons-material/InsertEmoticon';
@@ -8,10 +8,20 @@ import SendIcon from '@mui/icons-material/Send';
 import ImageIcon from '@mui/icons-material/Image';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import DocumentIcon from '@mui/icons-material/Description';
+import Picker from 'emoji-picker-react';
 
-function ChatInput({ onSend }) {
+function ChatInput({ onSend, onTyping }) {
     const [message, setMessage] = useState('');
     const [showAttachments, setShowAttachments] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+    useEffect(() => {
+        if (message) {
+            onTyping(true);
+        } else {
+            onTyping(false);
+        }
+    }, [message, onTyping]);
 
     const handleSend = (e) => {
         e.preventDefault();
@@ -19,6 +29,16 @@ function ChatInput({ onSend }) {
             onSend(message);
             setMessage('');
         }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            handleSend(e);
+        }
+    };
+
+    const onEmojiClick = (event, emojiObject) => {
+        setMessage(prevMessage => prevMessage + emojiObject.emoji);
     };
 
     return (
@@ -39,8 +59,9 @@ function ChatInput({ onSend }) {
                     </AttachmentButton>
                 </AttachmentMenu>
             )}
+            {showEmojiPicker && <Picker onEmojiClick={onEmojiClick} />}
             <InputContainer>
-                <IconButton>
+                <IconButton onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                     <InsertEmoticonIcon />
                 </IconButton>
                 <IconButton onClick={() => setShowAttachments(!showAttachments)}>
@@ -51,6 +72,7 @@ function ChatInput({ onSend }) {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type a message"
+                        onKeyPress={handleKeyPress}
                     />
                 </Form>
                 <IconButton>
@@ -127,4 +149,4 @@ const AttachmentButton = styled.button`
   }
 `;
 
-export default ChatInput; 
+export default ChatInput;

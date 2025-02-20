@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Avatar, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -12,6 +12,31 @@ import StatusBar from './StatusBar';
 import ChatInput from './ChatInput';
 
 function Chat() {
+    const [messages, setMessages] = useState([
+        { id: 1, message: "Hey everyone! How's it going?", timestamp: "3:52pm", sender: "John Doe", isReceived: true },
+        { id: 2, message: "All good here! Working on the new project.", timestamp: "3:55pm", sender: "You", isReceived: false },
+        { id: 3, message: "That's great to hear! Let's catch up later.", timestamp: "3:56pm", sender: "Jane Smith", isReceived: true }
+    ]);
+    const [isTyping, setIsTyping] = useState(false);
+
+    useEffect(() => {
+        socket.on('typing', (data) => {
+            setIsTyping(data.isTyping);
+        });
+
+        return () => {
+            socket.off('typing');
+        };
+    }, []);
+
+    const handleDeleteMessage = (id) => {
+        setMessages(messages.filter(message => message.id !== id));
+    };
+
+    const handleReactMessage = (id) => {
+        console.log(`Reacted to message with id: ${id}`);
+    };
+
     return (
         <ChatContainer className="chat-animation">
             <ChatHeader>
@@ -33,27 +58,21 @@ function Chat() {
             </ChatHeader>
 
             <ChatBody>
-                <MessageBubble
-                    message="Hey everyone! How's it going?"
-                    timestamp="3:52pm"
-                    sender="John Doe"
-                    isReceived={true}
-                />
-                <MessageBubble
-                    message="All good here! Working on the new project."
-                    timestamp="3:55pm"
-                    sender="You"
-                    isReceived={false}
-                />
-                <MessageBubble
-                    message="That's great to hear! Let's catch up later."
-                    timestamp="3:56pm"
-                    sender="Jane Smith"
-                    isReceived={true}
-                />
+                {messages.map((msg) => (
+                    <MessageBubble
+                        key={msg.id}
+                        message={msg.message}
+                        timestamp={msg.timestamp}
+                        sender={msg.sender}
+                        isReceived={msg.isReceived}
+                        isTyping={isTyping}
+                        onDelete={() => handleDeleteMessage(msg.id)}
+                        onReact={() => handleReactMessage(msg.id)}
+                    />
+                ))}
             </ChatBody>
 
-            <ChatInput onSend={(message) => console.log(message)} />
+            <ChatInput onSend={(message) => console.log(message)} onTyping={(isTyping) => socket.emit('typing', { isTyping })} />
         </ChatContainer>
     );
 }
@@ -125,4 +144,4 @@ const MessageInput = styled.input`
   font-size: 16px;
 `;
 
-export default Chat; 
+export default Chat;

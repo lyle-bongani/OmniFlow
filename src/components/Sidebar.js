@@ -9,6 +9,7 @@ import ExploreIcon from '@mui/icons-material/Explore';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 import { fadeIn, slideIn } from '../utils/animations';
 
 function Sidebar({ mode }) {
@@ -20,8 +21,10 @@ function Sidebar({ mode }) {
         { path: '/messages', icon: <MessageIcon />, label: 'Messages', notifications: 4 },
         { path: '/content', icon: <VideoLibraryIcon />, label: 'Content', notifications: 0 },
         { path: '/discover', icon: <ExploreIcon />, label: 'Discover', notifications: 0 },
+        { path: '/post', icon: <AddBoxIcon />, label: 'Post', notifications: 0 },
         { path: '/notifications', icon: <NotificationsIcon />, label: 'Notifications', notifications: 2 },
         { path: '/settings', icon: <SettingsIcon />, label: 'Settings', notifications: 0 },
+       
     ];
 
     return (
@@ -134,4 +137,4 @@ const ProfileEmail = styled.div`
   font-size: 12px;
 `;
 
-export default Sidebar; 
+export default Sidebar;

@@ -1,12 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Avatar, IconButton, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { fadeIn, slideIn } from '../utils/animations';
+import io from 'socket.io-client';
+
+const socket = io('http://localhost:3000'); // Replace with your server URL
 
 function Messages({ mode }) {
     const [selectedChat, setSelectedChat] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [isTyping, setIsTyping] = useState(false);
+
+    useEffect(() => {
+        console.log('Connecting to socket...');
+        socket.on('connect', () => {
+            console.log('Connected to socket server');
+        });
+
+        socket.on('message', (message) => {
+            console.log('Received message:', message);
+            setMessages((prevMessages) => [...prevMessages, message]);
+        });
+
+        socket.on('typing', (data) => {
+            setIsTyping(data.isTyping);
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from socket server');
+        });
+
+        return () => {
+            socket.off('connect');
+            socket.off('message');
+            socket.off('typing');
+            socket.off('disconnect');
+        };
+    }, []);
+
+    const handleSendMessage = () => {
+        if (newMessage.trim()) {
+            const message = {
+                chatId: selectedChat,
+                text: newMessage,
+                sender: 'You', // Replace with actual sender info
+                time: new Date().toLocaleTimeString(),
+            };
+            console.log('Sending message:', message);
+            socket.emit('sendMessage', message);
+            setMessages((prevMessages) => [...prevMessages, message]);
+            setNewMessage('');
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    const handleDeleteMessage = (id) => {
+        setMessages(messages.filter(message => message.id !== id));
+    };
+
+    const handleReactMessage = (id) => {
+        console.log(`Reacted to message with id: ${id}`);
+    };
 
     const chats = [
         {
@@ -94,14 +159,31 @@ function Messages({ mode }) {
                             </IconButton>
                         </ChatHeader>
                         <ChatMessages>
-                            {/* Messages will go here */}
+                            {messages.map((msg, index) => (
+                                <MessageItem key={index} mode={mode}>
+                                    <MessageSender mode={mode}>{msg.sender}</MessageSender>
+                                    <MessageText mode={mode}>{msg.text}</MessageText>
+                                    <MessageTime mode={mode}>{msg.time}</MessageTime>
+                                    <IconButton size="small" onClick={() => handleDeleteMessage(msg.id)}>
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                    <IconButton size="small" onClick={() => handleReactMessage(msg.id)}>
+                                        <ThumbUpIcon fontSize="small" />
+                                    </IconButton>
+                                </MessageItem>
+                            ))}
+                            {isTyping && <MessageItem mode={mode}><MessageText mode={mode}>Typing...</MessageText></MessageItem>}
                         </ChatMessages>
                         <ChatInput mode={mode}>
                             <Input
                                 placeholder="Type a message..."
                                 mode={mode}
+                                value={newMessage}
+                                onChange={(e) => setNewMessage(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                onBlur={() => socket.emit('typing', { isTyping: false })}
                             />
-                            <SendButton mode={mode}>Send</SendButton>
+                            <SendButton mode={mode} onClick={handleSendMessage}>Send</SendButton>
                         </ChatInput>
                     </ActiveChat>
                 ) : (
@@ -119,6 +201,9 @@ const Container = styled.div`
   display: flex;
   height: 100%;
   background-color: ${props => props.mode === 'light' ? '#f8fafc' : '#1e293b'};
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 `;
 
 const ChatsList = styled.div`
@@ -126,6 +211,11 @@ const ChatsList = styled.div`
   border-right: 1px solid ${props => props.mode === 'light' ? '#e2e8f0' : '#334155'};
   display: flex;
   flex-direction: column;
+  @media (max-width: 768px) {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid ${props => props.mode === 'light' ? '#e2e8f0' : '#334155'};
+  }
 `;
 
 const SearchContainer = styled.div`
@@ -230,6 +320,10 @@ const ChatView = styled.div`
   border-radius: 12px;
   display: flex;
   flex-direction: column;
+  @media (max-width: 768px) {
+    flex: none;
+    height: 100%;
+  }
 `;
 
 const ActiveChat = styled.div`
@@ -311,4 +405,23 @@ const NoChat = styled.div`
   }
 `;
 
-export default Messages; 
+const MessageItem = styled.div`
+  margin-bottom: 12px;
+`;
+
+const MessageSender = styled.div`
+  font-weight: bold;
+  color: ${props => props.mode === 'light' ? '#1e293b' : '#f8fafc'};
+`;
+
+const MessageText = styled.div`
+  color: ${props => props.mode === 'light' ? '#1e293b' : '#f8fafc'};
+`;
+
+const MessageTime = styled.div`
+  font-size: 12px;
+  color: ${props => props.mode === 'light' ? '#64748b' : '#94a3b8'};
+  text-align: right;
+`;
+
+export default Messages;
